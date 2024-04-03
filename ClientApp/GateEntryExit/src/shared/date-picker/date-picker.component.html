@@ -1,0 +1,7 @@
+<input type="text"
+    (bsValueChange)="onValueChange($event)"
+    placeholder="Date time picker"
+    class="mb-3 form-control"
+    [bsValue]="datePickerValue"
+    [bsConfig]="{withTimepicker: true, rangeInputFormat : 'MMMM Do YYYY, h:mm:ss a', dateInputFormat: 'MMMM Do YYYY, h:mm:ss a'}"
+    bsDatepicker>

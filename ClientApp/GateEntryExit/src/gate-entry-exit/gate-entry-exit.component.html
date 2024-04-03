@@ -1,0 +1,61 @@
+<div class="card">
+    <div class="card-header">
+        <h3>Create Gate Entry/Exit Record</h3>
+    </div>
+    <div class="card-body">
+        
+        <form [formGroup]="gateEntryExitFormGroup">
+            <div class="row">
+                <div class="col-3">
+                    <app-date-picker (dateChange)="dateChange($event)" [datePickerValue]="selectedDate"></app-date-picker>
+                </div>
+                <div class="col-2">
+                    <input type="text" placeholder="Enter people count" class="form-control" formControlName="peopleCount">
+                </div>
+                <div class="col-3">
+                    <label class="me-2">Gate operation : </label>                       
+                        <div class="form-check form-check-inline">
+                            <input type="radio"
+                                class="form-check-input" 
+                                [value]="'entry'" 
+                                name="gateOperation" 
+                                formControlName="gateOperation">
+                            <label class="form-check-label">Entry</label>
+                        </div>
+                        <div class="form-check form-check-inline"> 
+                            <input type="radio" 
+                                class="form-check-input"
+                                [value]="'exit'" 
+                                name="gateOperation" 
+                                formControlName="gateOperation">
+                            <label class="form-check-label">Exit</label>
+                        </div>                                                          
+                </div>
+                <div class="col-md-3">              
+                    <div class="input-group mb-3">
+                      <input type="text" class="form-control" formControlName="gateName" readonly/>         
+                      <input type="hidden" class="form-control" formControlName="gateId"/>            
+                      <button class="btn btn-primary" (click)="showGateModal()">
+                        Gates
+                      </button>  
+                    </div>  
+                  </div>
+                  <div class="col-md-1">
+                    <button class="btn btn-primary d-flex justify-content-end" type="submit" (click)="createOrEditGateEntryExit()" [disabled]="gateEntryExitFormGroup.invalid">
+                      Submit
+                      </button>    
+                  </div> 
+            </div>
+        </form>
+
+        <div class="row mt-3">
+          <div class="col-6">
+            <app-gate-entry (gateEntryEdit)="editGateEntry($event)"></app-gate-entry>
+          </div>
+          <div class="col-6">
+            <app-gate-exit (gateExitEdit)="editGateExit($event)"></app-gate-exit>
+          </div>
+        </div>
+        
+    </div>
+  </div>

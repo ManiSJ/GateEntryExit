@@ -1,0 +1,63 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3>Sensor with details</h3>
+        <div>            
+            <button class="mx-2 btn btn-primary disabled">Excel Report</button>  
+            <button class="mx-2 btn btn-danger disabled">Pdf Report</button>     
+        </div> 
+    </div>
+    <div class="card-body">
+        
+        <form [formGroup]="allSensorsWithDetailsFormGroup">
+            <div class="row">
+                <div class="col-md-1">From date</div>
+                <div class="col-md-3">         
+                    <app-date-picker (dateChange)="fromDateChange($event)"></app-date-picker>      
+                </div>
+                <div class="col-md-1">To date</div>
+                <div class="col-md-3">      
+                    <app-date-picker (dateChange)="toDateChange($event)"></app-date-picker>
+                </div>
+                <div class="col-md-3">                   
+                    <button type="button" class="btn btn-primary" (click)="showGateModal()">
+                    Select Gates
+                    </button>  
+                    <button class="btn btn-primary d-inline-block mx-2" type="submit" (click)="filterResults(getAllDto)" [disabled]="allSensorsWithDetailsFormGroup.invalid">
+                        Submit
+                        </button>    
+                    </div>
+                </div>  
+                <div class="col-md-1">
+              
+            </div>
+        </form>
+
+        <ul>
+            <span>Selected gates - </span>
+            <li *ngFor="let gate of gates" [style.display]="'inline'">
+                {{ gate.name }},
+            </li>
+        </ul>
+        
+        <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Gate Name</th>
+                <th>Gate Entry Count</th>
+                <th>Gate Exit Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sensorWithAllDetail of allSensorWithDetails">                             
+                <td>{{ sensorWithAllDetail.name }}</td>
+                <td>{{ sensorWithAllDetail.gateDetails.name }}</td>
+                <td>{{ sensorWithAllDetail.gateDetails.entryCount }}</td>
+                <td>{{ sensorWithAllDetail.gateDetails.exitCount }}</td>
+              </tr>
+            </tbody>
+          </table>
+        
+          <app-pagination [totalCount]="totalCount" (pageChangedEvent)="pageChanged($event)"></app-pagination>
+    </div>
+</div>

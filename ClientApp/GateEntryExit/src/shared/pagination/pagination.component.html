@@ -1,0 +1,11 @@
+<pagination
+    class="d-flex justify-content-end"
+    [totalItems]="totalCount"
+    [itemsPerPage]="5"
+    [boundaryLinks]="true"
+    previousText="&lsaquo;" 
+    nextText="&rsaquo;" 
+    firstText="&laquo;" 
+    lastText="&raquo;"
+    (pageChanged)="pageChanged($event)">
+</pagination>
