@@ -11,6 +11,9 @@ using GateEntryExit.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GateEntryExit.Controllers
 {
@@ -129,11 +132,75 @@ namespace GateEntryExit.Controllers
             return cacheData;
         }
 
+        [Route("getAllWithDetailsExcelReport")]
+        [HttpPost]
+        public async Task GetAllWithDetailsExcelReportAsync(GetAllSensorWithDetailsReportInputDto input)
+        {
+            var allSensorWithDetailsQueryable = _sensorRepository.GetAllWithDetails();
+            allSensorWithDetailsQueryable = FilterQuery(allSensorWithDetailsQueryable, input.GateIds, input.FromDate, input.ToDate);
+            var allSensorWithDetails = await allSensorWithDetailsQueryable
+                                                .OrderBy(p => p.Gate.Name)
+                                                .ToListAsync();
+
+            var getAllSensorWithDetails = GetAllSensorWithDetails(allSensorWithDetails, input.FromDate, input.ToDate);
+            var sensorDetails = getAllSensorWithDetails.Items;
+
+            SaveExcelReport(sensorDetails);
+        }
+
+        private void SaveExcelReport(List<SensorDetailsDto> sensorDetails)
+        {
+            string excelFilePath = Path.GetFullPath(Path.Combine("Excel", "Export", "SensorWithDetails.xlsx"));
+            FileInfo excelFile = new FileInfo(excelFilePath);
+
+            DeleteIfFileExists(excelFile);
+
+            using (ExcelPackage excelPackage = new ExcelPackage(excelFile))
+            {
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("SensorWithDetails");
+
+                // Define column headers
+                worksheet.Cells[1, 1].Value = "Sensor name";
+                worksheet.Cells[1, 2].Value = "Gate name";
+                worksheet.Cells[1, 3].Value = "Gate entry count";
+                worksheet.Cells[1, 4].Value = "Gate exit count";
+
+                // Populate data
+                for (int i = 0; i < sensorDetails.Count; i++)
+                {
+                    worksheet.Cells[i + 2, 1].Value = sensorDetails[i].Name;
+                    worksheet.Cells[i + 2, 2].Value = sensorDetails[i].GateDetails.Name;
+                    worksheet.Cells[i + 2, 3].Value = sensorDetails[i].GateDetails.EntryCount;
+                    worksheet.Cells[i + 2, 4].Value = sensorDetails[i].GateDetails.ExitCount;
+                }
+
+                // Formatting
+                worksheet.Row(1).Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Row(1).Style.Font.Bold = true;
+
+                for (int i = 2; i <= sensorDetails.Count() + 1; i++)
+                {
+                    worksheet.Row(2).Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                }
+
+                // Save the Excel file
+                excelPackage.SaveAs(excelFile);
+            }
+        }
+
+        private void DeleteIfFileExists(FileInfo excelFile)
+        {
+            if (excelFile.Exists)
+            {
+                excelFile.Delete();
+            }
+        }
+
         [Route("getAllWithDetails")]
         [HttpPost]
-        public async Task<GetAllSensorWithDetailsOutputDto> GetAllWithDetails(GetAllSensorWithDetailsInputDto input)
+        public async Task<GetAllSensorWithDetailsOutputDto> GetAllWithDetailsAsync(GetAllSensorWithDetailsInputDto input)
         {
-            var cacheKey = $"getAllSensorWithDetails-{input.SkipCount}-{input.MaxResultCount}-{input.Sorting}-{input.From}-{input.To}-";
+            var cacheKey = $"getAllSensorWithDetails-{input.SkipCount}-{input.MaxResultCount}-{input.Sorting}-{input.FromDate}-{input.ToDate}-";
             foreach(var gateId in input.GateIds)
             {
                 cacheKey = cacheKey + $"{gateId}";
@@ -145,9 +212,9 @@ namespace GateEntryExit.Controllers
                 return cacheData;
             }
 
-            if (input.From != null && input.To != null)
+            if (input.FromDate != null && input.ToDate != null)
             {
-                if(input.From > input.To)
+                if(input.FromDate > input.ToDate)
                 {
                     throw new Exception("From date must be less than To date");
                 }
@@ -155,7 +222,7 @@ namespace GateEntryExit.Controllers
 
             var allSensorWithDetailsQueryable = _sensorRepository.GetAllWithDetails();
 
-            allSensorWithDetailsQueryable = FilterQuery(allSensorWithDetailsQueryable, input);
+            allSensorWithDetailsQueryable = FilterQuery(allSensorWithDetailsQueryable, input.GateIds, input.FromDate, input.ToDate);
 
             var totalCount = await allSensorWithDetailsQueryable.CountAsync();
 
@@ -165,7 +232,7 @@ namespace GateEntryExit.Controllers
                                                 .Take(input.MaxResultCount)
                                                 .ToListAsync();
 
-            var getAllSensorWithDetails = GetAllSensorWithDetails(allSensorWithDetails, input);
+            var getAllSensorWithDetails = GetAllSensorWithDetails(allSensorWithDetails, input.FromDate, input.ToDate);
             getAllSensorWithDetails.TotalCount = totalCount;
 
             cacheData = getAllSensorWithDetails;
@@ -173,7 +240,9 @@ namespace GateEntryExit.Controllers
             return cacheData;
         }
 
-        private GetAllSensorWithDetailsOutputDto GetAllSensorWithDetails(List<Sensor> allSensorWithDetails, GetAllSensorWithDetailsInputDto input)
+        private GetAllSensorWithDetailsOutputDto GetAllSensorWithDetails(List<Sensor> allSensorWithDetails, 
+            DateTime? fromDate,
+            DateTime? toDate)
         {
             var getAllSensorWithDetails = new GetAllSensorWithDetailsOutputDto();
             var allSensorDetails = new List<SensorDetailsDto>();
@@ -191,20 +260,20 @@ namespace GateEntryExit.Controllers
                 var gateEntries = sensorWithDetails.Gate.GateEntries;
                 var gateExits = sensorWithDetails.Gate.GateExits;
 
-                if (input.From != null && input.To != null)
+                if (fromDate != null && toDate != null)
                 {
-                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp >= input.From && p.TimeStamp <= input.To).ToList();
-                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp >= input.From && p.TimeStamp <= input.To).ToList();
+                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp >= fromDate && p.TimeStamp <= toDate).ToList();
+                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp >= fromDate && p.TimeStamp <= toDate).ToList();
                 }
-                else if (input.From != null && input.To == null)
+                else if (fromDate != null && toDate == null)
                 {
-                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp >= input.From).ToList();
-                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp >= input.From).ToList();
+                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp >= fromDate).ToList();
+                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp >= fromDate).ToList();
                 }
-                else if (input.From == null && input.To != null)
+                else if (fromDate == null && toDate != null)
                 {
-                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp <= input.To).ToList();
-                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp <= input.To).ToList();
+                    gateEntries = sensorWithDetails.Gate.GateEntries.Where(p => p.TimeStamp <= toDate).ToList();
+                    gateExits = sensorWithDetails.Gate.GateExits.Where(p => p.TimeStamp <= toDate).ToList();
                 }
 
                 gateDetails.EntryCount = gateEntries.Sum(p => p.NumberOfPeople);
@@ -220,28 +289,30 @@ namespace GateEntryExit.Controllers
             return getAllSensorWithDetails;
         }
 
-        private IQueryable<Sensor> FilterQuery(IQueryable<Sensor> allSensorWithDetailsQueryable, GetAllSensorWithDetailsInputDto input)
+        private IQueryable<Sensor> FilterQuery(IQueryable<Sensor> allSensorWithDetailsQueryable, Guid[] gateIds, 
+            DateTime? fromDate, 
+            DateTime? toDate)
         {
-            if (input.GateIds.Count() > 0)
-                allSensorWithDetailsQueryable = allSensorWithDetailsQueryable.Where(s =>input.GateIds.Contains(s.Gate.Id));
+            if (gateIds.Count() > 0)
+                allSensorWithDetailsQueryable = allSensorWithDetailsQueryable.Where(s => gateIds.Contains(s.Gate.Id));
 
-            if (input.From != null && input.To != null)
+            if (fromDate != null && toDate != null)
             {
                 allSensorWithDetailsQueryable = allSensorWithDetailsQueryable
-                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp >= input.From && p.TimeStamp <= input.To) ||
-                        s.Gate.GateExits.Any(p => p.TimeStamp >= input.From && p.TimeStamp <= input.To));
+                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp >= fromDate && p.TimeStamp <= toDate) ||
+                        s.Gate.GateExits.Any(p => p.TimeStamp >= fromDate && p.TimeStamp <= toDate));
             }
-            else if (input.From != null && input.To == null)
+            else if (fromDate != null && toDate == null)
             {
                 allSensorWithDetailsQueryable = allSensorWithDetailsQueryable
-                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp >= input.From) ||
-                        s.Gate.GateExits.Any(p => p.TimeStamp >= input.From));
+                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp >= fromDate) ||
+                        s.Gate.GateExits.Any(p => p.TimeStamp >= fromDate));
             }
-            else if (input.From == null && input.To != null)
+            else if (fromDate == null && toDate != null)
             {
                 allSensorWithDetailsQueryable = allSensorWithDetailsQueryable
-                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp <= input.To) ||
-                        s.Gate.GateExits.Any(p => p.TimeStamp <= input.To));
+                    .Where(s => s.Gate.GateEntries.Any(p => p.TimeStamp <= toDate) ||
+                        s.Gate.GateExits.Any(p => p.TimeStamp <= toDate));
             }
 
             return allSensorWithDetailsQueryable;

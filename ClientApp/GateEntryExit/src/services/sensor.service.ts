@@ -8,6 +8,7 @@ import { UpdateSensorDto } from '../models/sensor/update-sensor-dto';
 import { GetAllDto } from '../models/shared/get-all-dto';
 import { GetAllSensorsDto } from '../models/sensor/get-all-sensors-dto';
 import { SensorDetailsDto } from '../models/sensor/sensor-details-dto';
+import { GetAllSensorWithDetailsReportInputDto } from '../models/sensor/get-all-sensor-with-details-excel-input-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,8 @@ export class SensorService {
   private getApiUrl = '';
   private getAllApiUrl = environment.apiUrl + '/api/sensor/getAll';
   private getAllWithDetailsApiUrl = environment.apiUrl + '/api/sensor/getAllWithDetails';
+  private getAllWithDetailsApiUrlExcelReport = environment.apiUrl + '/api/sensor/getAllWithDetailsExcelReport';
+  private getAllWithDetailsApiUrlPdfReport = environment.apiUrl + '/api/sensor/getAllWithDetailsPdfReport';
 
   constructor(private http : HttpClient) { }
 
@@ -36,6 +39,16 @@ export class SensorService {
    // POST request
   getAllWithDetails(data: GetAllSensorWithDetailsInputDto): Observable<any> {
     return this.http.post<any>(`${this.getAllWithDetailsApiUrl}`, data);
+  }
+
+  // POST request
+  getAllWithDetailsExcelReport(data: GetAllSensorWithDetailsReportInputDto): Observable<any> {
+    return this.http.post<any>(`${this.getAllWithDetailsApiUrlExcelReport}`, data);
+  }
+
+  // POST request
+  getAllWithDetailsPdfReport(data: GetAllSensorWithDetailsReportInputDto): Observable<any> {
+    return this.http.post<any>(`${this.getAllWithDetailsApiUrlPdfReport}`, data);
   }
 
   // POST request

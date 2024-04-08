@@ -1,6 +1,6 @@
 import { Action, Selector, State, StateContext } from "@ngxs/store";
 import { SensorDetailsDto } from "../../models/sensor/sensor-details-dto";
-import { CreateSensor, DeleteSensor, EditSensor, GetAllSensorWithDetail, GetAllSensor } from "./sensor-action";
+import { CreateSensor, DeleteSensor, EditSensor, GetAllSensorWithDetail, GetAllSensor, GetAllSensorWithDetailExcelReport, GetAllSensorWithDetailPdfReport } from "./sensor-action";
 import { tap } from "rxjs";
 import { SensorService } from "../../services/sensor.service";
 import { Injectable } from "@angular/core";
@@ -104,6 +104,24 @@ export class SensorState {
             ctx.patchState({
                 sensorWithDetailsTotalCount : data.totalCount,
                 sensorWithDetails : data.items
+            });
+        }));
+    }
+
+    @Action(GetAllSensorWithDetailExcelReport)
+    getAllSensorWithDetailsExcelReport(ctx: StateContext<SensorStateModel>, action: GetAllSensorWithDetailExcelReport){
+        return this.sensorService.getAllWithDetailsExcelReport(action.payload).pipe(tap(data => {   
+            ctx.patchState({
+              
+            });
+        }));
+    }
+
+    @Action(GetAllSensorWithDetailPdfReport)
+    getAllSensorWithDetailsPdfReport(ctx: StateContext<SensorStateModel>, action: GetAllSensorWithDetailPdfReport){
+        return this.sensorService.getAllWithDetailsPdfReport(action.payload).pipe(tap(data => {   
+            ctx.patchState({
+               
             });
         }));
     }

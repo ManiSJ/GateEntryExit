@@ -6,8 +6,8 @@ namespace GateEntryExit.Dtos.Sensor
     {
         public Guid[] GateIds { get; set; }
 
-        public DateTime? From { get; set; } 
+        public DateTime? FromDate { get; set; } 
 
-        public DateTime? To { get; set; }
+        public DateTime? ToDate { get; set; }
     }
 }
