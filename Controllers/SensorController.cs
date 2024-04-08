@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -160,27 +161,39 @@ namespace GateEntryExit.Controllers
                 ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("SensorWithDetails");
 
                 // Define column headers
-                worksheet.Cells[1, 1].Value = "Sensor name";
-                worksheet.Cells[1, 2].Value = "Gate name";
-                worksheet.Cells[1, 3].Value = "Gate entry count";
-                worksheet.Cells[1, 4].Value = "Gate exit count";
+                var columnHeaders = new Dictionary<Expression<Func<SensorDetailsDto, object>>, string>
+                {
+                    { obj => obj.Name, "Sensor name" },
+                    { obj => obj.GateDetails.Name, "Gate name" },
+                    { obj => obj.GateDetails.EntryCount, "Gate entry count" },
+                    { obj => obj.GateDetails.ExitCount, "Gate exit count" }
+                    // Add more mappings for additional properties
+                };
 
+                // Set column headers dynamically using the mapping
+                int columnIndex = 1;
+                foreach (var kvp in columnHeaders)
+                {
+                    worksheet.Cells[1, columnIndex].Value = kvp.Value;
+                    worksheet.Cells[1, columnIndex].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[1, columnIndex].Style.Font.Bold = true;
+                    columnIndex++;
+                }
+
+                columnIndex = 1; 
                 // Populate data
                 for (int i = 0; i < sensorDetails.Count; i++)
                 {
-                    worksheet.Cells[i + 2, 1].Value = sensorDetails[i].Name;
-                    worksheet.Cells[i + 2, 2].Value = sensorDetails[i].GateDetails.Name;
-                    worksheet.Cells[i + 2, 3].Value = sensorDetails[i].GateDetails.EntryCount;
-                    worksheet.Cells[i + 2, 4].Value = sensorDetails[i].GateDetails.ExitCount;
-                }
-
-                // Formatting
-                worksheet.Row(1).Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.Row(1).Style.Font.Bold = true;
-
-                for (int i = 2; i <= sensorDetails.Count() + 1; i++)
-                {
-                    worksheet.Row(2).Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    int rowIndex = i + 2;
+                    foreach (var kvp in columnHeaders)
+                    {
+                        var property = kvp.Key.Compile();
+                        var value = property.Invoke(sensorDetails[i]);
+                        worksheet.Cells[rowIndex, columnIndex].Value = value;
+                        worksheet.Cells[rowIndex, columnIndex].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        columnIndex++;
+                    }
+                    columnIndex = 1; // Reset columnIndex for the next row
                 }
 
                 // Save the Excel file
