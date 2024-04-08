@@ -1,6 +1,5 @@
-<div class="form-check">
-  <input class="form-check-input" 
-    *ngIf="isCheckBoxSelection" 
+<div class="form-check"  *ngIf="isCheckBoxSelection" >
+  <input class="form-check-input"    
     type="checkbox"         
     (change)="selectAll($event)">
   <label class="form-check-label" for="flexCheckDefault">

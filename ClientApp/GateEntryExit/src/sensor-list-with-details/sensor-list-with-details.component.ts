@@ -19,7 +19,7 @@ import { GetAllGateById } from '../state/gate/gate-action';
 import { Observable, Subject, switchMap, takeUntil } from 'rxjs';
 import { GateState } from '../state/gate/gate-state';
 import { GetAllGatesDto } from '../models/gate/get-all-gates-dto';
-import { GetAllSensorWithDetail } from '../state/sensor/sensor-action';
+import { GetAllSensorWithDetail, GetAllSensorWithDetailExcelReport } from '../state/sensor/sensor-action';
 import { SensorState } from '../state/sensor/sensor-state';
 
 @Component({
@@ -72,8 +72,7 @@ export class SensorListWithDetailsComponent implements OnInit, OnDestroy {
         .subscribe(totalCount => this.totalCount = totalCount);
     }
 
-  ngOnInit() : void{    
-    this.initializeGetAll();
+  ngOnInit() : void {    
     this.getAllSensorsWithDetails(this.getAllDto);
   }
 
@@ -81,15 +80,6 @@ export class SensorListWithDetailsComponent implements OnInit, OnDestroy {
     this.unSubscribeGetAllGateById$.next();
     this.unSubscribeGetAllSensor$.next();
     this.unSubscribeGetTotalCount$.next();
-  }
-  
-  initializeGetAll(){
-    this.getAllDto.maxResultCount = 5;
-    this.getAllDto.skipCount = 0 ;
-    this.getAllDto.sorting = '';
-    this.getAllDto.gateIds = [];
-    this.getAllDto.from = null;
-    this.getAllDto.to = null;
   }
 
   getAllSensorsWithDetails(input : GetAllSensorWithDetailsInputDto){
@@ -99,15 +89,15 @@ export class SensorListWithDetailsComponent implements OnInit, OnDestroy {
   filterResults(input : GetAllSensorWithDetailsInputDto)
   {
     input.gateIds = this.selectedGateIds;
-    input.from = this.selectedFromDate ? this.selectedFromDate : null;
-    input.to = this.selectedToDate ? this.selectedToDate : null;
+    input.fromDate = this.selectedFromDate ? this.selectedFromDate : null;
+    input.toDate = this.selectedToDate ? this.selectedToDate : null;
 
     input.maxResultCount = 5;
     input.sorting = '';
 
-    if(input.from && input.to)
+    if(input.fromDate && input.toDate)
     {
-      if(new Date(input.from) > new Date(input.to))
+      if(new Date(input.fromDate) > new Date(input.toDate))
       {
         alert("From date must be less than To date");
         return;
@@ -161,5 +151,13 @@ export class SensorListWithDetailsComponent implements OnInit, OnDestroy {
       }
     }); */
 
+  }
+
+  excelReport(){
+    this.store.dispatch(new GetAllSensorWithDetailExcelReport(this.getAllDto)).subscribe(() => {});
+  }
+
+  pdfReport(){
+    
   }
 }

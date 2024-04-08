@@ -14,18 +14,18 @@
                 </div>
                 <div class="col-3">
                     <label class="me-2">Gate operation : </label>                       
-                        <div class="form-check form-check-inline">
+                        <div class="form-check form-check-inline" *ngIf="isGateEntryOperation">
                             <input type="radio"
-                                class="form-check-input" 
+                                class="form-check-input"                                 
                                 [value]="'entry'" 
                                 name="gateOperation" 
                                 formControlName="gateOperation">
                             <label class="form-check-label">Entry</label>
                         </div>
-                        <div class="form-check form-check-inline"> 
+                        <div class="form-check form-check-inline" *ngIf="isGateExitOperation"> 
                             <input type="radio" 
                                 class="form-check-input"
-                                [value]="'exit'" 
+                                [value]="'exit'"                                
                                 name="gateOperation" 
                                 formControlName="gateOperation">
                             <label class="form-check-label">Exit</label>
