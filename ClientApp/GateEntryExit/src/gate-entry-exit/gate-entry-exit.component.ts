@@ -49,6 +49,8 @@ export class GateEntryExitComponent implements OnInit, OnDestroy{
   gates : GateDetailsDto[] = [];
   getAllDto : GetAllDto = new GetAllDto({skipCount: 0, maxResultCount : 5, sorting : ''});
   gateEntryExitFormGroup: FormGroup = this.formBuilder.group({});
+  isGateEntryOperation : boolean = true;
+  isGateExitOperation : boolean = true;
 
   selectedDate : string = '';
   
@@ -147,6 +149,8 @@ export class GateEntryExitComponent implements OnInit, OnDestroy{
   }
 
   editGateEntry(event : any){
+    this.isGateEntryOperation = true;
+    this.isGateExitOperation = false;
     this.selectedGateEntryExitId = event.id;
     this.selectedDate = event.timeStamp;
     this.gateEntryExitFormGroup.patchValue({
@@ -158,6 +162,8 @@ export class GateEntryExitComponent implements OnInit, OnDestroy{
   }
 
   editGateExit(event : any){
+    this.isGateEntryOperation = false;
+    this.isGateExitOperation = true;
     this.selectedGateEntryExitId = event.id;
     this.selectedDate = event.timeStamp;
     this.gateEntryExitFormGroup.patchValue({
