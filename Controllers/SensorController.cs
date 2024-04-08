@@ -11,7 +11,9 @@ using GateEntryExit.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using OfficeOpenXml;
+using Scryber.Components;
 using System.Linq.Expressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -146,12 +148,12 @@ namespace GateEntryExit.Controllers
             var getAllSensorWithDetails = GetAllSensorWithDetails(allSensorWithDetails, input.FromDate, input.ToDate);
             var sensorDetails = getAllSensorWithDetails.Items;
 
-            SaveExcelReport(sensorDetails);
+            CreateExcelReport(sensorDetails);
         }
 
-        private void SaveExcelReport(List<SensorDetailsDto> sensorDetails)
+        private void CreateExcelReport(List<SensorDetailsDto> sensorDetails)
         {
-            string excelFilePath = Path.GetFullPath(Path.Combine("Excel", "Export", "SensorWithDetails.xlsx"));
+            string excelFilePath = System.IO.Path.GetFullPath(System.IO.Path.Combine("Report", "Excel", "Export", "SensorWithDetails.xlsx"));
             FileInfo excelFile = new FileInfo(excelFilePath);
 
             DeleteIfFileExists(excelFile);
@@ -206,6 +208,45 @@ namespace GateEntryExit.Controllers
             if (excelFile.Exists)
             {
                 excelFile.Delete();
+            }
+        }
+
+        [Route("getAllWithDetailsPdfReport")]
+        [HttpPost]
+        public async Task GetAllWithDetailsPdfReportAsync(GetAllSensorWithDetailsReportInputDto input)
+        {
+            var allSensorWithDetailsQueryable = _sensorRepository.GetAllWithDetails();
+            allSensorWithDetailsQueryable = FilterQuery(allSensorWithDetailsQueryable, input.GateIds, input.FromDate, input.ToDate);
+            var allSensorWithDetails = await allSensorWithDetailsQueryable
+                                                .OrderBy(p => p.Gate.Name)
+                                                .ToListAsync();
+
+            var getAllSensorWithDetails = GetAllSensorWithDetails(allSensorWithDetails, input.FromDate, input.ToDate);
+
+            CreatePdfReport(getAllSensorWithDetails);
+        }
+
+        private void CreatePdfReport(GetAllSensorWithDetailsOutputDto sensorDetails)
+        {
+            // https://scrybercore.readthedocs.io/en/latest/1_overview/1_gui_controller_full.html
+            // https://scrybercore.readthedocs.io/en/latest/1_overview/7_parameters_and_expressions.html
+
+            string workingDirectory = System.Environment.CurrentDirectory;
+            var path = System.IO.Path.Combine(workingDirectory, "Resources\\SensorWithDetails.html");
+            var output = System.IO.Path.GetFullPath(System.IO.Path.Combine("Report", "Pdf", "SensorWithDetails.pdf"));
+
+            using (var doc = Document.ParseDocument(path))
+            {
+                doc.Params["model"] = new
+                {
+                    sensorWithDetails = sensorDetails
+                };
+
+                //And save it to a file or a stream
+                using (var stream = new System.IO.FileStream(output, System.IO.FileMode.Create))
+                {
+                    doc.SaveAsPDF(stream);
+                }
             }
         }
 

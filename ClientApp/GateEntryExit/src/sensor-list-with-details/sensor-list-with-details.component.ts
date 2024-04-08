@@ -19,7 +19,7 @@ import { GetAllGateById } from '../state/gate/gate-action';
 import { Observable, Subject, switchMap, takeUntil } from 'rxjs';
 import { GateState } from '../state/gate/gate-state';
 import { GetAllGatesDto } from '../models/gate/get-all-gates-dto';
-import { GetAllSensorWithDetail, GetAllSensorWithDetailExcelReport } from '../state/sensor/sensor-action';
+import { GetAllSensorWithDetail, GetAllSensorWithDetailExcelReport, GetAllSensorWithDetailPdfReport } from '../state/sensor/sensor-action';
 import { SensorState } from '../state/sensor/sensor-state';
 
 @Component({
@@ -158,6 +158,6 @@ export class SensorListWithDetailsComponent implements OnInit, OnDestroy {
   }
 
   pdfReport(){
-    
+    this.store.dispatch(new GetAllSensorWithDetailPdfReport(this.getAllDto)).subscribe(() => {});
   }
 }
