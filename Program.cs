@@ -6,6 +6,10 @@ using GateEntryExit.Repositories;
 using GateEntryExit.Repositories.Interfaces;
 using GateEntryExit.Service;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Exceptions;
+using Serilog.Sinks.Elasticsearch;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,9 @@ builder.Services.AddTransient<IGuidGenerator, GuidGenerator>();
 
 builder.Services.AddTransient<ICacheService, CacheService>();
 
+configureLogging();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -55,3 +62,33 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void configureLogging()
+{
+    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+    var configuration = new ConfigurationBuilder()
+                        .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile(path: $"appsettings.{environment}.json", optional: true)
+                        .Build();
+
+    Log.Logger = new LoggerConfiguration()
+                 .Enrich.FromLogContext()
+                 .Enrich.WithExceptionDetails()
+                 .WriteTo.Debug()
+                 .WriteTo.Console()
+                 .WriteTo.Elasticsearch(configureElasticSink(configuration, environment))
+                 .Enrich.WithProperty("Environment", environment)
+                 .ReadFrom.Configuration(configuration)
+                 .CreateLogger();
+}
+
+ElasticsearchSinkOptions configureElasticSink(IConfigurationRoot configuration, string environment)
+{
+    return new ElasticsearchSinkOptions(new Uri(configuration["ElasticConfiguration:Uri"]))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".","-")}-{environment.ToLower()}-{DateTime.UtcNow:yyyy-MM}",
+        NumberOfReplicas = 1,
+        NumberOfShards = 2
+    };
+}

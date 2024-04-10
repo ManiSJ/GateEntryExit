@@ -20,28 +20,29 @@ namespace GateEntryExit.Controllers
     public class GateController : ControllerBase
     {
         private readonly IGateRepository _gateRepository;
-
         private readonly IGateManager _gateManager;
-
         private readonly IGuidGenerator _guidGenerator;
-
         private readonly ICacheService _cacheService;
+        private readonly ILogger<GateController> _logger;
 
         public GateController(IGateRepository gateRepository,
             IGateManager gateManager,
             IGuidGenerator guidGenerator,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            ILogger<GateController> logger)
         {
             _gateRepository = gateRepository;
             _gateManager = gateManager;
             _guidGenerator = guidGenerator;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
         [Route("getAll")]
         [HttpPost]
         public async Task<GetAllGatesDto> GetAllAsync(GetAllDto input)
         {
+            _logger.LogInformation("Gate all gates");
             var cacheKey = $"getAllGate-{input.SkipCount}-{input.MaxResultCount}-{input.Sorting}";
             var cacheData = _cacheService.GetData<GetAllGatesDto>(cacheKey);
 
@@ -119,17 +120,25 @@ namespace GateEntryExit.Controllers
         [HttpPost]
         public async Task<GateDto> CreateAsync(CreateGateDto input)
         {
-            var gate = await _gateManager.CreateAsync(_guidGenerator.Create(), input.Name);
-            await _gateRepository.InsertAsync(gate);
-
-            _cacheService.RemoveDatas("getAllGate-*");
-            //_cacheService.RemoveDatas("getAllGatePost-*");
-
-            return new GateDto()
+            try
             {
-                Name = gate.Name,
-                Id = gate.Id
-            };
+                var gate = await _gateManager.CreateAsync(_guidGenerator.Create(), input.Name);
+                await _gateRepository.InsertAsync(gate);
+
+                _cacheService.RemoveDatas("getAllGate-*");
+                //_cacheService.RemoveDatas("getAllGatePost-*");
+
+                return new GateDto()
+                {
+                    Name = gate.Name,
+                    Id = gate.Id
+                };
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Something is wrong", input.Name);
+                return null;
+            }
         }
 
         [Route("edit")]
