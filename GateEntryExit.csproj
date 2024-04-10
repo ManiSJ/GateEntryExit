@@ -22,12 +22,19 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.3" />
+    <PackageReference Include="Scryber.Core" Version="5.0.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Excel\Import\" />
-    <Folder Include="Excel\Export\" />
+    <Folder Include="Report\Excel\Import\" />
+    <Folder Include="Report\Pdf\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\SensorWithDetails.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
