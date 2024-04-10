@@ -9,14 +9,32 @@
             font-family: 'Roboto', sans-serif;
             font-size: 14pt;
         }
+        header, footer {
+            padding: 10pt;
+            background-color: #333;
+            color: #EEE;
+            border-bottom: 1px solid black;
+            border-top: 1px solid black;
+        }
+        td.index {
+            color: #333;
+            font-size: 10pt;
+        }
+        td, th {
+            padding: .75rem;
+        }
+        tr.even {
+            background-color: rgba(0,0,0,.05);
+        }
     </style>
 </head>
 <body>
-    <header style='padding:20px;color:white;background-color:#1f05e8'>Gate entry, exit counts</header>
+    <header>Gate entry, exit counts</header>
     <main>
         <table class='table table-striped'>
             <thead>
                 <tr>
+                    <th class="index">#</th>
                     <th>Sensor name</th>
                     <th>Gate name</th>
                     <th>Gate entry count</th>
@@ -25,16 +43,17 @@
             </thead>
             <tbody>
                 <template data-bind='{{model.sensorWithDetails.Items}}'>
-                        <tr>
-                            <td>{{.Name}}</td>
-                            <td>{{.GateDetails.Name}}</td>
-                            <td>{{.GateDetails.EntryCount}}</td>
-                            <td>{{.GateDetails.ExitCount}}</td>
-                        </tr>
-                    </template>
+                    <tr class="{{if(index() % 2 == 1, 'odd', 'even')}}">
+                        <td class="index">{{index()}}</td>
+                        <td>{{.Name}}</td>
+                        <td>{{.GateDetails.Name}}</td>
+                        <td>{{.GateDetails.EntryCount}}</td>
+                        <td>{{.GateDetails.ExitCount}}</td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </main>
-    <footer style='padding:20px;color:white;background-color:#1f05e8'>&copy; Gate entry exit 2024</footer>
+    <footer>The Current Page is <page /> of <page property='total' /></footer>
 </body>
 </html>

@@ -1,6 +1,6 @@
 It captures Gate entry, exit count of people with timestamp.
 
-Tech stack : Asp.Net Core Web API, Angular 17, MS Sql server, Caching(Redis), Logging(Serilog, ElasticSearch, Kibana)
+Tech stack : Asp.Net Core Web API, Angular 17, MS Sql server, Caching(Redis), Logging(Serilog, ElasticSearch, Kibana), Excel(EPPlus), PDF(Scryber.Core)
 
 Angular UI
 
