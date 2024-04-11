@@ -4,6 +4,8 @@ It captures Gate entry, exit count of people with timestamp.
 
 Tech stack : MS Sql server, Caching(Redis), Logging(Serilog, ElasticSearch, Kibana), Excel(EPPlus), PDF(Scryber.Core)
 
+Angular UI - https://github.com/ManiSJ/GateEntryExit-Angular
+
 API Endpoints
 
 ![Gate_GateEntry_RestAPI_Endpoints](https://github.com/ManiSJ/GateEntryExit/assets/11914200/1139373b-8747-4c90-a23a-99e196a3b2d2)
