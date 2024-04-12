@@ -91,6 +91,34 @@ namespace GateEntryExit.Controllers
             return cacheData;
         }
 
+        [Route("getById/{id}")]
+        [HttpPost]
+        public async Task<GateDto> GetByIdAsync(Guid id)
+        {
+            var result = new GateDto();
+
+            var cacheKey = $"getGateById-";
+            cacheKey = cacheKey + $"{id}";
+            
+            var cacheData = _cacheService.GetData<GateDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return cacheData;
+            }
+
+            var gate = await _gateRepository.GetAsync(id);
+
+            cacheData = new GateDto()
+            {
+                Name = gate.Name,
+                Id = gate.Id
+            };
+            _cacheService.SetData<GateDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
+
+            return cacheData;
+        }
+
         private async Task<GetAllGatesDto> GetAllGatesAsync(GetAllDto input)
         {
             var result = new List<GateDetailsDto>();
@@ -126,7 +154,7 @@ namespace GateEntryExit.Controllers
                 await _gateRepository.InsertAsync(gate);
 
                 _cacheService.RemoveDatas("getAllGate-*");
-                //_cacheService.RemoveDatas("getAllGatePost-*");
+                _cacheService.RemoveDatas("getGateById-*");
 
                 return new GateDto()
                 {
@@ -149,7 +177,7 @@ namespace GateEntryExit.Controllers
             var gate = await _gateRepository.GetAsync(input.Id);
 
             _cacheService.RemoveDatas("getAllGate-*");
-            //_cacheService.RemoveDatas("getAllGatePost-*");
+            _cacheService.RemoveDatas("getGateById-*");
 
             return new GateDto()
             {
