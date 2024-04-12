@@ -10,6 +10,7 @@ using GateEntryExit.Repositories;
 using Microsoft.EntityFrameworkCore;
 using GateEntryExit.Dtos.Shared;
 using GateEntryExit.Service;
+using Scryber.OpenType.SubTables;
 
 namespace GateEntryExit.Controllers
 {
@@ -94,13 +95,43 @@ namespace GateEntryExit.Controllers
             return cacheData;
         }
 
+        [Route("getById/{id}")]
+        [HttpPost]
+        public async Task<GateEntryDto> GetByIdAsync(Guid id)
+        {
+            var cacheKey = $"getGateEntryById-";
+            cacheKey = cacheKey + $"{id}";
+
+            var cacheData = _cacheService.GetData<GateEntryDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return cacheData;
+            }
+
+            var gateEntry = await _gateEntryRepository.GetAsync(id);
+
+            cacheData = new GateEntryDto()
+            {
+                Id = gateEntry.Id,
+                NumberOfPeople = gateEntry.NumberOfPeople,
+                TimeStamp = gateEntry.TimeStamp,
+                GateId = gateEntry.GateId
+            };
+            _cacheService.SetData<GateEntryDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
+
+            return cacheData;
+        }
+
         [Route("edit")]
         [HttpPost]
         public async Task<GateEntryDto> EditAsync(UpdateGateEntryDto input)
         {
             await _gateEntryRepository.UpdateAsync(input.Id, input.TimeStamp, input.NumberOfPeople);
             var gateEntry = await _gateEntryRepository.GetAsync(input.Id);
+
             _cacheService.RemoveDatas("getAllGateEntries-*");
+            _cacheService.RemoveDatas($"getGateEntryById-{input.Id}");
 
             return new GateEntryDto()
             {

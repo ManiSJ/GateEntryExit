@@ -95,8 +95,6 @@ namespace GateEntryExit.Controllers
         [HttpPost]
         public async Task<GateDto> GetByIdAsync(Guid id)
         {
-            var result = new GateDto();
-
             var cacheKey = $"getGateById-";
             cacheKey = cacheKey + $"{id}";
             
@@ -153,8 +151,7 @@ namespace GateEntryExit.Controllers
                 var gate = await _gateManager.CreateAsync(_guidGenerator.Create(), input.Name);
                 await _gateRepository.InsertAsync(gate);
 
-                _cacheService.RemoveDatas("getAllGate-*");
-                _cacheService.RemoveDatas("getGateById-*");
+                _cacheService.RemoveDatas("getAllGate-*");               
 
                 return new GateDto()
                 {
@@ -177,7 +174,7 @@ namespace GateEntryExit.Controllers
             var gate = await _gateRepository.GetAsync(input.Id);
 
             _cacheService.RemoveDatas("getAllGate-*");
-            _cacheService.RemoveDatas("getGateById-*");
+            _cacheService.RemoveDatas($"getGateById-{input.Id}");
 
             return new GateDto()
             {

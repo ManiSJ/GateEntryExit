@@ -73,7 +73,9 @@ namespace GateEntryExit.Controllers
         {
             await _sensorRepository.UpdateAsync(input.Id, input.Name);
             var sensor = await _sensorRepository.GetAsync(input.Id);
+
             _cacheService.RemoveDatas("getAllSensors-*");
+            _cacheService.RemoveDatas($"getSensorById-{input.Id}");
 
             return new SensorDetailsDto()
             {
@@ -92,6 +94,37 @@ namespace GateEntryExit.Controllers
             await _sensorRepository.DeleteAsync(id);
             _cacheService.RemoveDatas("getAllSensors-*");
         }
+
+        [Route("getById/{id}")]
+        [HttpPost]
+        public async Task<SensorDetailsDto> GetByIdAsync(Guid id)
+        {
+            var cacheKey = $"getSensorById-";
+            cacheKey = cacheKey + $"{id}";
+
+            var cacheData = _cacheService.GetData<SensorDetailsDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return cacheData;
+            }
+
+            var sensor = await _sensorRepository.GetAsync(id);
+
+            cacheData = new SensorDetailsDto()
+            {
+                Id = sensor.Id,
+                Name = sensor.Name,
+                GateDetails = new GateDetailsDto()
+                {
+                    Id = sensor.GateId
+                }
+            };
+            _cacheService.SetData<SensorDetailsDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
+
+            return cacheData;
+        }
+
 
         [Route("getAll")]
         [HttpPost]

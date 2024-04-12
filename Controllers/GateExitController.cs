@@ -94,13 +94,43 @@ namespace GateEntryExit.Controllers
             return cacheData;
         }
 
+        [Route("getById/{id}")]
+        [HttpPost]
+        public async Task<GateExitDto> GetByIdAsync(Guid id)
+        {
+            var cacheKey = $"getGateExitById-";
+            cacheKey = cacheKey + $"{id}";
+
+            var cacheData = _cacheService.GetData<GateExitDto>(cacheKey);
+
+            if (cacheData != null)
+            {
+                return cacheData;
+            }
+
+            var gateEntry = await _gateExitRepository.GetAsync(id);
+
+            cacheData = new GateExitDto()
+            {
+                Id = gateEntry.Id,
+                NumberOfPeople = gateEntry.NumberOfPeople,
+                TimeStamp = gateEntry.TimeStamp,
+                GateId = gateEntry.GateId
+            };
+            _cacheService.SetData<GateExitDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
+
+            return cacheData;
+        }
+
         [Route("edit")]
         [HttpPost]
         public async Task<GateExitDto> EditAsync(UpdateGateExitDto input)
         {
             await _gateExitRepository.UpdateAsync(input.Id, input.TimeStamp, input.NumberOfPeople);
             var gateExit = await _gateExitRepository.GetAsync(input.Id);
+
             _cacheService.RemoveDatas("getAllGateExits-*");
+            _cacheService.RemoveDatas($"getGateEntryById-{input.Id}");
 
             return new GateExitDto()
             {
