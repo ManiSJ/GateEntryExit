@@ -117,7 +117,8 @@ namespace GateEntryExit.Controllers
                 Name = sensor.Name,
                 GateDetails = new GateDetailsDto()
                 {
-                    Id = sensor.GateId
+                    Id = sensor.GateId,
+                    Name = sensor.Gate.Name
                 }
             };
             _cacheService.SetData<SensorDetailsDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));

@@ -25,7 +25,7 @@ namespace GateEntryExit.Repositories
 
         public async Task<Sensor> GetAsync(Guid id)
         {
-            return await _dbContext.Sensors.Where(p => p.Id == id).FirstOrDefaultAsync();
+            return await _dbContext.Sensors.Include(p => p.Gate).Where(p => p.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task<bool> IsGateAlreadyHasSensorAsync(Guid gateId)

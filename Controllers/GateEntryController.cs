@@ -116,7 +116,8 @@ namespace GateEntryExit.Controllers
                 Id = gateEntry.Id,
                 NumberOfPeople = gateEntry.NumberOfPeople,
                 TimeStamp = gateEntry.TimeStamp,
-                GateId = gateEntry.GateId
+                GateId = gateEntry.GateId,
+                GateName = gateEntry.Gate.Name
             };
             _cacheService.SetData<GateEntryDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
 

@@ -108,14 +108,15 @@ namespace GateEntryExit.Controllers
                 return cacheData;
             }
 
-            var gateEntry = await _gateExitRepository.GetAsync(id);
+            var gateExit = await _gateExitRepository.GetAsync(id);
 
             cacheData = new GateExitDto()
             {
-                Id = gateEntry.Id,
-                NumberOfPeople = gateEntry.NumberOfPeople,
-                TimeStamp = gateEntry.TimeStamp,
-                GateId = gateEntry.GateId
+                Id = gateExit.Id,
+                NumberOfPeople = gateExit.NumberOfPeople,
+                TimeStamp = gateExit.TimeStamp,
+                GateId = gateExit.GateId,
+                GateName = gateExit.Gate.Name
             };
             _cacheService.SetData<GateExitDto>(cacheKey, cacheData, DateTime.Now.AddSeconds(30));
 
@@ -130,7 +131,7 @@ namespace GateEntryExit.Controllers
             var gateExit = await _gateExitRepository.GetAsync(input.Id);
 
             _cacheService.RemoveDatas("getAllGateExits-*");
-            _cacheService.RemoveDatas($"getGateEntryById-{input.Id}");
+            _cacheService.RemoveDatas($"getGateExitById-{input.Id}");
 
             return new GateExitDto()
             {

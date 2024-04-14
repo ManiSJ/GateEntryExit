@@ -19,7 +19,7 @@ namespace GateEntryExit.Repositories
 
         public async Task<GateExit> GetAsync(Guid id)
         {
-            return await _dbContext.GateExits.Where(p => p.Id == id).FirstOrDefaultAsync();
+            return await _dbContext.GateExits.Include(p => p.Gate).Where(p => p.Id == id).FirstOrDefaultAsync();
         }
 
         public async Task InsertAsync(GateExit gateExit)
