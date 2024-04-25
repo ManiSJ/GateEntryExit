@@ -20,7 +20,7 @@ using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var JWTSetting = builder.Configuration.GetSection("JWTSetting");
 
 // Add services to the container.
@@ -56,6 +56,21 @@ builder.Services.AddSwaggerGen(c => {
         }
     });
 
+});
+
+// 4200 - Angular
+// 5189 - MVC
+// 81 - JavaScript (IIS hosted)
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policyBuilder =>
+                      {
+                          policyBuilder.WithOrigins("http://localhost:4200", "http://localhost:5189", "http://localhost:81");
+                          policyBuilder.AllowAnyHeader();
+                          policyBuilder.AllowAnyMethod();
+                      });
 });
 
 builder.Services.AddDbContext<GateEntryExitDbContext>(options =>
@@ -118,12 +133,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 4200 - Angular
-// 5189 - MVC
-// 81 - JavaScript (IIS hosted)
-app.UseCors(options => options.WithOrigins("http://localhost:4200", "http://localhost:5189" , "http://localhost:81")
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthorization();
 
