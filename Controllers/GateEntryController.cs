@@ -9,8 +9,8 @@ using GateEntryExit.Dtos.Gate;
 using GateEntryExit.Repositories;
 using Microsoft.EntityFrameworkCore;
 using GateEntryExit.Dtos.Shared;
-using GateEntryExit.Service;
 using Scryber.OpenType.SubTables;
+using GateEntryExit.Service.Cache;
 
 namespace GateEntryExit.Controllers
 {

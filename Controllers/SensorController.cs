@@ -7,7 +7,7 @@ using GateEntryExit.Dtos.Shared;
 using GateEntryExit.Helper;
 using GateEntryExit.Repositories;
 using GateEntryExit.Repositories.Interfaces;
-using GateEntryExit.Service;
+using GateEntryExit.Service.Cache;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

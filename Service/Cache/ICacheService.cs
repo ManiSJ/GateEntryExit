@@ -1,4 +1,4 @@
-﻿namespace GateEntryExit.Service
+﻿namespace GateEntryExit.Service.Cache
 {
     public interface ICacheService
     {

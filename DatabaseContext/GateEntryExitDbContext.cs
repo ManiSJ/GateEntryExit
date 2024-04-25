@@ -1,9 +1,10 @@
 ﻿using GateEntryExit.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GateEntryExit.DatabaseContext
 {
-    public class GateEntryExitDbContext : DbContext
+    public class GateEntryExitDbContext : IdentityDbContext<AppUser>
     {
         public GateEntryExitDbContext(DbContextOptions options) : base(options)
         {
