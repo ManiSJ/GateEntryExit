@@ -18,6 +18,8 @@ namespace GateEntryExit.DatabaseContext
 
         public DbSet<Gate> Gates { get; set; }
 
+        public DbSet<GateEmployee> GateEmployees { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Gate>(entity =>
@@ -35,6 +37,11 @@ namespace GateEntryExit.DatabaseContext
                 entity.HasMany(g => g.GateExits)
                   .WithOne(ge => ge.Gate)
                   .HasForeignKey(ge => ge.GateId);
+            });
+
+            modelBuilder.Entity<GateEmployee>(entity =>
+            {
+                entity.HasKey(g => g.Id);
             });
 
             modelBuilder.Entity<GateEntry>(entity =>
