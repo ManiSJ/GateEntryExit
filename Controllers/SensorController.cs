@@ -8,6 +8,7 @@ using GateEntryExit.Helper;
 using GateEntryExit.Repositories;
 using GateEntryExit.Repositories.Interfaces;
 using GateEntryExit.Service.Cache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +21,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GateEntryExit.Controllers
 {
-    [Route("api/sensor")]
+    [Authorize]
     [ApiController]
+    [Route("api/sensor")]
     public class SensorController : ControllerBase
     {
         private readonly ISensorRepository _sensorRepository;

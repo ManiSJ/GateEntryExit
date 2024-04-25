@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using GateEntryExit.Service.Token;
+using Azure;
 
 namespace GateEntryExit.Controllers
 {
@@ -182,21 +183,41 @@ namespace GateEntryExit.Controllers
             };
         }
 
-        //[AllowAnonymous]
-        //[HttpPost("forgot-password")]
-        //public async Task<AuthResponseDto> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
-        //{
-        //    var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<AuthResponseDto> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(forgotPasswordDto.Email);
 
-        //    if (user is null)
-        //    {
-        //        return new AuthResponseDto
-        //        {
-        //            IsSuccess = false,
-        //            Message = "User does not exist with this email"
-        //        };
-        //    }
-        //}
+            if (user is null)
+            {
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "User does not exist with this email"
+                };
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = $"http://localhost:4200/reset-password?email={user.Email}&token={WebUtility.UrlEncode(token)}";
+
+            if (false)
+            {
+                return new AuthResponseDto
+                {
+                    IsSuccess = true,
+                    Message = "Email sent with password reset link. Please check your email."
+                };
+            }
+            else
+            {
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "response.Content!.ToString()"
+                };
+            }
+        }
 
 
         [AllowAnonymous]

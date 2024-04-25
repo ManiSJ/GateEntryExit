@@ -8,14 +8,16 @@ using GateEntryExit.Helper;
 using GateEntryExit.Repositories;
 using GateEntryExit.Repositories.Interfaces;
 using GateEntryExit.Service.Cache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GateEntryExit.Controllers
 {
-    [Route("api/gateExit")]
+    [Authorize]
     [ApiController]
+    [Route("api/gateExit")]
     public class GateExitController : ControllerBase
     {
         private readonly IGateExitRepository _gateExitRepository;

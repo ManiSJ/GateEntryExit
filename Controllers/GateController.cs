@@ -7,6 +7,7 @@ using GateEntryExit.Helper;
 using GateEntryExit.Repositories;
 using GateEntryExit.Repositories.Interfaces;
 using GateEntryExit.Service.Cache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -15,8 +16,9 @@ using System.Collections.Generic;
 
 namespace GateEntryExit.Controllers
 {
-    [Route("api/gate")]
+    [Authorize]
     [ApiController]
+    [Route("api/gate")]    
     public class GateController : ControllerBase
     {
         private readonly IGateRepository _gateRepository;

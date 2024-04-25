@@ -11,11 +11,13 @@ using Microsoft.EntityFrameworkCore;
 using GateEntryExit.Dtos.Shared;
 using Scryber.OpenType.SubTables;
 using GateEntryExit.Service.Cache;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GateEntryExit.Controllers
 {
-    [Route("api/gateEntry")]
+    [Authorize]
     [ApiController]
+    [Route("api/gateEntry")]
     public class GateEntryController : ControllerBase
     {
         private readonly IGateEntryRepository _gateEntryRepository;
