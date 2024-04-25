@@ -23,6 +23,8 @@ namespace GateEntryExit.DatabaseContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Gate>(entity =>
             {
                 entity.Property(g => g.Name).IsRequired().HasMaxLength(50);
