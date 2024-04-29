@@ -9,5 +9,9 @@
         public string? Message { get; set; }
 
         public string RefreshToken { get; set; }
+
+        public bool IsTfaEnabled { get; set; }
+
+        public bool IsTfaSuccess { get; set; }
     }
 }

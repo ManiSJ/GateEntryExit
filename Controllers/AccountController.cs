@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using GateEntryExit.Service.Token;
 using Azure;
+using System.Text.Encodings.Web;
+using Scryber.Components;
 
 namespace GateEntryExit.Controllers
 {
@@ -26,14 +28,19 @@ namespace GateEntryExit.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
+        private readonly UrlEncoder _urlEncoder;
+
+        private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
         public AccountController(UserManager<AppUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
+        UrlEncoder urlEncoder,
         ITokenService tokenService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _urlEncoder = urlEncoder;
             _configuration = configuration;
             _tokenService = tokenService;
         }
@@ -114,6 +121,7 @@ namespace GateEntryExit.Controllers
                 };
             }
 
+            var isTfaEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
 
             var token = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -127,8 +135,34 @@ namespace GateEntryExit.Controllers
                 Token = token,
                 IsSuccess = true,
                 Message = "Login Success.",
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken,
+                IsTfaEnabled = isTfaEnabled,
+                IsTfaSuccess = false
             };
+        }
+
+        [HttpPost("login-tfa")]
+        public async Task<AuthResponseDto> LoginTfa([FromBody] TfaDto tfaDto)
+        {
+            var user = await _userManager.FindByEmailAsync(tfaDto.Email);
+
+            if (user == null)
+                return new AuthResponseDto { Message = "Invalid Authentication" };
+
+            var validVerification =
+              await _userManager.VerifyTwoFactorTokenAsync(
+                 user, _userManager.Options.Tokens.AuthenticatorTokenProvider, tfaDto.Code);
+            if (!validVerification)
+                return new AuthResponseDto { Message = "Invalid Token Verification" };
+
+            if (user.RefreshToken != tfaDto.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return new AuthResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Invalid client request"
+                };
+
+            return new AuthResponseDto { IsSuccess = true, IsTfaEnabled = true };
         }
 
         [AllowAnonymous]
@@ -303,7 +337,6 @@ namespace GateEntryExit.Controllers
             });
         }
 
-
         [HttpGet]
         public async Task<IEnumerable<UserDetailDto>> GetUsers()
         {
@@ -314,6 +347,74 @@ namespace GateEntryExit.Controllers
                 FullName = u.FullName,
                 Roles = _userManager.GetRolesAsync(u).Result.ToArray()
             }).ToListAsync();
+        }
+
+        [HttpGet("tfa-setup")]
+        public async Task<TfaSetupDto> GetTfaSetup(string email)
+        {
+            var user = await _userManager.FindByNameAsync(email);
+
+            if (user == null)
+                return new TfaSetupDto { Error = "User does not exist" };
+
+            var isTfaEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+
+            var authenticatorKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            if (authenticatorKey == null)
+            {
+                await _userManager.ResetAuthenticatorKeyAsync(user);
+                authenticatorKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            }
+            var formattedKey = GenerateQrCode(email, authenticatorKey);
+
+            return new TfaSetupDto
+            { IsTfaEnabled = isTfaEnabled, AuthenticatorKey = authenticatorKey, FormattedKey = formattedKey };
+        }
+
+        private string GenerateQrCode(string email, string unformattedKey)
+        {
+            return string.Format(
+            AuthenticatorUriFormat,
+                _urlEncoder.Encode("GateEntryExit"),
+                _urlEncoder.Encode(email),
+                unformattedKey);
+        }
+
+        [HttpPost("tfa-setup")]
+        public async Task<TfaSetupDto> PostTfaSetup([FromBody] TfaSetupDto tfaModel)
+        {
+            var user = await _userManager.FindByNameAsync(tfaModel.Email);
+
+            var isValidCode = await _userManager
+                .VerifyTwoFactorTokenAsync(user,
+                  _userManager.Options.Tokens.AuthenticatorTokenProvider,
+                  tfaModel.Code);
+
+            if (isValidCode)
+            {
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                return new TfaSetupDto { IsTfaEnabled = true };
+            }
+            else
+            {
+                return new TfaSetupDto { Error = "Invalid code" };
+            }
+        }
+
+        [HttpDelete("tfa-setup")]
+        public async Task<TfaSetupDto> DeleteTfaSetup(string email)
+        {
+            var user = await _userManager.FindByNameAsync(email);
+
+            if (user == null)
+            {
+                return new TfaSetupDto { Error = "User not exist" };
+            }
+            else
+            {
+                await _userManager.SetTwoFactorEnabledAsync(user, false);
+                return new TfaSetupDto { IsTfaEnabled = false };
+            }
         }
 
     }
