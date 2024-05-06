@@ -61,13 +61,14 @@ builder.Services.AddSwaggerGen(c => {
 // 4200 - Angular
 // 5189 - MVC
 // 81 - JavaScript (IIS hosted)
+// 44328 - Umbraco
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policyBuilder =>
                       {
-                          policyBuilder.WithOrigins("http://localhost:4200", "http://localhost:5189", "http://localhost:81");
+                          policyBuilder.WithOrigins("http://localhost:4200", "http://localhost:5189", "http://localhost:81", "https://localhost:44328/");
                           policyBuilder.AllowAnyHeader();
                           policyBuilder.AllowAnyMethod();
                       });
