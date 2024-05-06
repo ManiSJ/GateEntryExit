@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using System.Text.Json;
 
-namespace GateEntryExit.Service
+namespace GateEntryExit.Service.Cache
 {
     public class CacheService : ICacheService
     {
@@ -33,7 +33,7 @@ namespace GateEntryExit.Service
 
         public void RemoveData(string key)
         {
-            if(_cacheDb.KeyExists(key))
+            if (_cacheDb.KeyExists(key))
                 _cacheDb.KeyDelete(key);
         }
 
@@ -45,7 +45,7 @@ namespace GateEntryExit.Service
                 {
                     _cacheDb.KeyDelete(key);
                 }
-            }            
+            }
         }
 
         public void SetData<T>(string key, T value, DateTimeOffset expirationTime)

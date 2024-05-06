@@ -1,9 +1,10 @@
 ﻿using GateEntryExit.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GateEntryExit.DatabaseContext
 {
-    public class GateEntryExitDbContext : DbContext
+    public class GateEntryExitDbContext : IdentityDbContext<AppUser>
     {
         public GateEntryExitDbContext(DbContextOptions options) : base(options)
         {
@@ -22,6 +23,8 @@ namespace GateEntryExit.DatabaseContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Gate>(entity =>
             {
                 entity.Property(g => g.Name).IsRequired().HasMaxLength(50);
