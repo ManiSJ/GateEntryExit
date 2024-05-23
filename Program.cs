@@ -62,13 +62,14 @@ builder.Services.AddSwaggerGen(c => {
 // 5189 - MVC
 // 81 - JavaScript (IIS hosted)
 // 44328 - Umbraco
+// 8081 - Vue
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policyBuilder =>
                       {
-                          policyBuilder.WithOrigins("http://localhost:4200", "http://localhost:5189", "http://localhost:81", "https://localhost:44328/");
+                          policyBuilder.WithOrigins("http://localhost:4200", "http://localhost:5189", "http://localhost:81", "https://localhost:44328/", "http://localhost:8081");
                           policyBuilder.AllowAnyHeader();
                           policyBuilder.AllowAnyMethod();
                       });
