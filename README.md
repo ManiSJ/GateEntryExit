@@ -1,6 +1,6 @@
 # GateEntryExit - Asp.Net Core Web API
 
-It captures Gate entry, exit count of people with timestamp.
+It captures Gate entry, exit count of people with timestamp. JWT based authentication.
 
 Tech stack : MS Sql server, Caching(Redis), Logging(Serilog, ElasticSearch, Kibana), Excel(EPPlus), PDF(Scryber.Core)
 
